@@ -161,6 +161,7 @@ class AutoregressivePolicy(Policy):
 
         if temperature is None:
             temperature = self.args.temperature
+        
         sequences = self.base_model.generate(
             inputs=queries,
             images=images,

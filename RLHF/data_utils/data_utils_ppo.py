@@ -110,6 +110,7 @@ class QueryResponseDataset(Dataset):
         self.list_dict_data = list_dict_data
 
     def __getitem__(self, idx):
+        
         return_dict = dict(
             queries=self.queries[idx],
             query_attn_masks=self.query_attn_masks[idx],

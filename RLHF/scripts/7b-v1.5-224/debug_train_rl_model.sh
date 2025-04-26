@@ -3,23 +3,23 @@
 set -e
 set -x
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
-export DATA_DIR="/path/to/your/data/directory"
-export MODEL_DIR="/path/to/your/model/directory"
+export CUDA_VISIBLE_DEVICES=4 #0 #,1,2,3
+export DATA_DIR="/scratch/e35895/data"
+export MODEL_DIR="/scratch/e35895/code/LLaVA-RLHF/checkpoints"
 export PYTHONPATH="$PWD:$PYTHONPATH"
-export GPUS_PER_NODE=8
+export GPUS_PER_NODE=1 #4 #8
 export OMP_NUM_THREADS=8
 export TRANSFORMERS_OFFLINE=1
 
 # MODEL CONFIG
 POLICY_BASE_MODEL_NAME=LLaVA-RLHF-7b-v1.5-224/sft_model
-RM_BASE_MODEL_NAME=LLaVA-RLHF-13b-v1.5-336/sft_model
+RM_BASE_MODEL_NAME=LLaVA-RLHF-7b-v1.5-224/sft_model
 
-POLICY_LORA=LLaVA-RL-INIT-7b-v1.5-224-lora-padding/lora_default
-RM_LORA=LLaVA-Fact-RM-13b-v1.5-336-lora-padding/checkpoint-200  # we use early stopping
+POLICY_LORA=LLaVA-RLHF-7b-v1.5-224/rlhf_lora_adapter_model
+RM_LORA=LLaVA-Fact-RM-7b-v1.5-224-sherlock/checkpoint-22000/adapter_model/lora_default  # we use early stopping
 
 # SAVE CONFIG
-MODEL_NAME=LLaVA-RL-Fact-RLHF-7b-v1.5-224-lora-padding
+MODEL_NAME=rl_debug_7b_v1.5_224
 
 # TRAINING CONFIG
 LEARNING_RATE=3e-5
@@ -36,6 +36,8 @@ NOPTEPOCHS=2
 INCOMPLETE_RESPONSE=-8.0
 LENGTH_BONUS=-10.0
 CORRECT_BONUS=2.0
+
+# THINGS CHANGED: RESUME_FROM_TRAINING chnaged to false.
 
 torchrun \
     --standalone \
@@ -56,7 +58,7 @@ torchrun \
     --learning_rate $LEARNING_RATE \
     --init_value_with_reward True \
     --warmup_steps 5 \
-    --dataset_path $DATA_DIR/llava_ppo50k-aokvqa12k-vqa10k.json \
+    --dataset_path $DATA_DIR/LLaVA-RLHF/LLaVA-RLHF-Data/rl_model_debug.json \
     --train_splits "train" \
     --output_dir "$MODEL_DIR/$MODEL_NAME" \
     --total_epochs $EPOCH \
@@ -77,7 +79,7 @@ torchrun \
     --relative_stop_token_penalty True \
     --penalize_no_stop_token True \
     --ddp_find_unused_parameters False \
-    --resume_from_training True \
+    --resume_from_training False \
     --kl_coef $KL_COEF \
     --max_grad_norm 1.0 \
     --whitening_async_stats "full_batch" \
@@ -88,7 +90,7 @@ torchrun \
     --query_len 128 \
     --response_len 896 \
     --noptepochs $NOPTEPOCHS \
-    --image_folder $DATA_DIR/coco/train2017 \
+    --image_folder $DATA_DIR/COCO/train2017 \
     --vision_tower different \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \

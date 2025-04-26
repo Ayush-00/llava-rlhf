@@ -289,7 +289,8 @@ def train():
         model_max_length=training_args.model_max_length,
         padding_side="left",
         truncation_side="right",
-        use_fast=False,
+        #use_fast=False,     # default setting
+        use_fast=True,      # use_fast set to true --> resolves tokeinization mismatch!
     )
 
     if model_args.version == "v0":
@@ -370,6 +371,7 @@ def train():
         )
 
     model.backbone_model.config.use_cache = False
+    
     print_trainable_parameters(args, model)
     print("loaded model")
     set_seed(args.seed)

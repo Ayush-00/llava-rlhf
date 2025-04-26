@@ -3,11 +3,11 @@
 set -e
 set -x
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
-export DATA_DIR="/path/to/your/data/directory"
-export MODEL_DIR="/path/to/your/model/directory"
+export CUDA_VISIBLE_DEVICES=$(seq -s, 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l) - 1 )))
+export DATA_DIR="/scratch/e35895/data"
+export MODEL_DIR="/scratch/e35895/code/LLaVA-RLHF/checkpoints"
 export PYTHONPATH="$PWD:$PYTHONPATH"
-export GPUS_PER_NODE=8
+export GPUS_PER_NODE=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 export OMP_NUM_THREADS=8
 
 
@@ -24,7 +24,7 @@ MODEL_NAME=LLaVA-Fact-RM-13b-v1.5-336-lora-padding
 # TRAINING CONFIG
 NUM_EPOCHS=1
 LEARNING_RATE=2e-5
-BATCH_SIZE=4
+BATCH_SIZE=1
 GRAD_ACCUMULATION=1
 
 torchrun \
@@ -39,7 +39,7 @@ torchrun \
     --per_device_eval_batch_size $BATCH_SIZE \
     --gradient_accumulation_steps $GRAD_ACCUMULATION \
     --model_name_or_path $MODEL_DIR/$LM_MODEL_NAME \
-    --image_folder $DATA_DIR/coco/train2017 \
+    --image_folder $DATA_DIR/COCO/train2017 \
     --vision_tower $VISION_TOWER \
     --learning_rate $LEARNING_RATE \
     --mm_vision_select_layer -2 \
@@ -49,8 +49,8 @@ torchrun \
     --model_max_length 2048 \
     --query_len 1280 \
     --response_len 768 \
-    --dataset_path $DATA_DIR/$PREFERENCE_DATA \
-    --eval_dataset_path $DATA_DIR/$PREFERENCE_DATA \
+    --dataset_path $DATA_DIR/LLaVA-RLHF/$PREFERENCE_DATA \
+    --eval_dataset_path $DATA_DIR/LLaVA-RLHF/$PREFERENCE_DATA \
     --dataset_name "none" \
     --eval_dataset_name "none" \
     --eval_size 500 \
@@ -64,16 +64,16 @@ torchrun \
     --eval_steps 50 \
     --save_strategy "steps" \
     --save_steps 50 \
-    --save_total_limit 10 \
+    --save_total_limit 2 \
     --weight_decay 0.0 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "constant_with_warmup" \
     --logging_steps 5 \
-    --report_to "tensorboard" \
+    --report_to none \
     --ddp_backend "nccl" \
     --bf16 True \
     --ddp_find_unused_parameters False \
     --resume_from_training True \
     --reward_prompt_file "./prompts/fact_rlhf_reward_prompt.txt" \
-    --image_to_caption_file "$DATA_DIR/image_to_caption.json" \
+    --image_to_caption_file "$DATA_DIR/LLaVA-RLHF/LLaVA-RLHF-Data/image_to_caption.json" \
     --image_aspect_ratio 'pad'

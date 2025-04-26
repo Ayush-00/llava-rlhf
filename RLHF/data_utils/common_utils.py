@@ -393,6 +393,7 @@ def preprocess_v1(
             conversations.append(
                 conv.get_prompt() + reward_model_prompt_per_example + "</s>"
             )
+
     # Tokenize conversations
 
     if has_image:

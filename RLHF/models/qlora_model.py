@@ -108,6 +108,7 @@ def get_accelerate_model(
         assert args.bits in [16, 32]
 
     print(f"loading base model {args.model_name_or_path}...")
+    
 
     model = LlavaLlamaForCausalLM.from_pretrained(
         args.model_name_or_path,
@@ -131,6 +132,8 @@ def get_accelerate_model(
         ),
         trust_remote_code=args.trust_remote_code,
     )
+
+    # Check loaded model's bits if args.bits is 16. CONFIRM
     if compute_dtype == torch.float16 and args.bits == 4:
         major, minor = torch.cuda.get_device_capability()
         if major >= 8:

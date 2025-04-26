@@ -1,3 +1,4 @@
+
 diff --git a/llava/model/builder.py b/llava/model/builder.py
 index 0a891f0..b12f1a8 100644
 --- a/llava/model/builder.py
@@ -2181,3 +2182,4 @@ index 656c6f9..8182302 100644
          elif model_args.mm_use_im_patch_token:
              if model_args.tune_mm_mlp_adapter:
                  for p in self.get_input_embeddings().parameters():
+

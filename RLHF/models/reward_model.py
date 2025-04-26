@@ -31,6 +31,7 @@ from peft import PeftModel, LoraModel, LoraConfig
 from models.qlora_model import get_accelerate_model
 
 from llava.model import *
+from dataclasses import dataclass
 
 
 def unpack_dict(
@@ -133,7 +134,7 @@ class RewardConfig(transformers.PretrainedConfig):
         super(RewardConfig, self).__init__(**kwargs)
         self.backbone_model_name_or_path = backbone_model_name_or_path
 
-
+@dataclass
 class RewardModelOutput(ModelOutput):
     rewards: Tensor = None
 
@@ -188,6 +189,8 @@ class RewardModel(transformers.PreTrainedModel):
         # easier to use for later stages of reranking / RL training.
         self.backbone_model.set_adapter(self.adapter_name)
         self.backbone_model.config.use_cache = False
+
+        #print(f"\n\n\nThis forward pass of the reward model is being used.\n\n\n")
 
         # print(input_ids.shape, images.shape, 'images', images.dtype)
         outputs = self.backbone_model(
